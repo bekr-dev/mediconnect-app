@@ -1,0 +1,30 @@
+name: mediconnect
+description: MediConnect - Application médicale de mise en relation patients et médecins
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.1
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+  animate_do: ^5.1.0
+  flutter_animate: ^4.5.0
+  smooth_page_indicator: ^2.0.1
+  intl: ^0.20.2
+  provider: ^6.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/logo.png
