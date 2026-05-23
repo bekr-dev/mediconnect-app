@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "463716535452",
+    "project_id": "mediconnect-65d5646421-medi",
+    "storage_bucket": "mediconnect-65d5646421-medi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:463716535452:android:affeaf3aadbd64117ab159",
+        "android_client_info": {
+          "package_name": "com.example.mediconnect_clear"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "463716535452-hfqpres0eg4e1n2o0q6vjne06kro2c3h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mediconnect_clear",
+            "certificate_hash": "63c480d8efa2a09cb2b1474ffb6192317c071a01"
+          }
+        },
+        {
+          "client_id": "463716535452-iftc8ockuuhfslom2r1jesuul95meu0f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNJhJkif7iBq6DrQKC0mtq3cRQ4uhwXnA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "463716535452-iftc8ockuuhfslom2r1jesuul95meu0f.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "463716535452-qhq3d2lksjtg6caedq7mejtn7ikedbik.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mediconnectClear"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

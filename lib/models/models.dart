@@ -1,11 +1,13 @@
-// ===== MODELS (sans base de données) =====
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ===== USER MODEL =====
 class UserModel {
   final String id;
   final String username;
   final String email;
-  final String role; // 'patient' or 'doctor'
+  final String role;
   final String? nom;
+  // Patient fields
   final String? dateNaissance;
   final String? sexe;
   final String? taille;
@@ -14,6 +16,7 @@ class UserModel {
   final String? nomProfessionnel;
   final String? specialite;
   final String? anciennete;
+  final String? numerodetel;
   final double? latitude;
   final double? longitude;
 
@@ -30,19 +33,70 @@ class UserModel {
     this.nomProfessionnel,
     this.specialite,
     this.anciennete,
+    this.numerodetel,
     this.latitude,
     this.longitude,
   });
+
+  factory UserModel.fromMap(Map<String, dynamic> map, String documentId) {
+    return UserModel(
+      id: documentId,
+      username: map['username'] ?? '',
+      email: map['email'] ?? '',
+      role: map['role'] ?? 'patient',
+      nom: map['nom'],
+      dateNaissance: map['dateNaissance'],
+      sexe: map['sexe'],
+      taille: map['taille'],
+      poids: map['poids'],
+      nomProfessionnel: map['nomProfessionnel'],
+      specialite: map['specialite'],
+      anciennete: map['anciennete'],
+      numerodetel: map['numerodetel'],
+      latitude:
+          map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null
+          ? (map['longitude'] as num).toDouble()
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'username': username,
+      'email': email,
+      'role': role,
+      'nom': nom,
+      if (dateNaissance != null) 'dateNaissance': dateNaissance,
+      if (sexe != null) 'sexe': sexe,
+      if (taille != null) 'taille': taille,
+      if (poids != null) 'poids': poids,
+      if (nomProfessionnel != null) 'nomProfessionnel': nomProfessionnel,
+      if (specialite != null) 'specialite': specialite,
+      if (anciennete != null) 'anciennete': anciennete,
+      if (numerodetel != null) 'numerodetel': numerodetel,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+    };
+  }
 }
 
+// ===== RENDEZ-VOUS MODEL =====
 class RendezVousModel {
   final String id;
   final String patientId;
   final String doctorId;
   final String patientNom;
   final String doctorNom;
+  final String specialite;
+  final String type;
+  final String motif;
+  final String modePaiement;
   final DateTime dateTime;
-  final String statut; // 'en_attente', 'confirme', 'termine'
+  final DateTime createdAt;
+  final String statut; // 'en_attente', 'confirme', 'annuler', 'termine'
+  final int rendezVousnum;
+  final String? raisonRefus;
 
   RendezVousModel({
     required this.id,
@@ -50,11 +104,86 @@ class RendezVousModel {
     required this.doctorId,
     required this.patientNom,
     required this.doctorNom,
+    this.specialite = '',
+    this.type = '',
+    this.motif = '',
+    this.modePaiement = '',
     required this.dateTime,
+    required this.createdAt,
     required this.statut,
+    this.rendezVousnum = 0,
+    this.raisonRefus,
   });
+
+  factory RendezVousModel.fromMap(Map<String, dynamic> map, String docId) {
+    DateTime parseDate(dynamic val) {
+      if (val == null) return DateTime.now();
+      if (val is Timestamp) return val.toDate();
+      if (val is String) return DateTime.tryParse(val) ?? DateTime.now();
+      return DateTime.now();
+    }
+
+    return RendezVousModel(
+      id: docId,
+      patientId: map['patientId'] ?? '',
+      doctorId: map['doctorId'] ?? '',
+      patientNom: map['patientNom'] ?? '',
+      doctorNom: map['doctorNom'] ?? '',
+      specialite: map['specialite'] ?? '',
+      type: map['type'] ?? '',
+      motif: map['motif'] ?? '',
+      modePaiement: map['modePaiement'] ?? '',
+      dateTime: parseDate(map['dateTime']),
+      createdAt: parseDate(map['createdAt']),
+      statut: map['statut'] ?? 'en_attente',
+      rendezVousnum: map['rendezVousnum'] ?? 0,
+      raisonRefus: map['raisonRefus'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'patientId': patientId,
+      'patientNom': patientNom,
+      'doctorId': doctorId,
+      'doctorNom': doctorNom,
+      'specialite': specialite,
+      'type': type,
+      'motif': motif,
+      'modePaiement': modePaiement,
+      'dateTime': Timestamp.fromDate(dateTime),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'statut': statut,
+      'rendezVousnum': rendezVousnum,
+      if (raisonRefus != null) 'raisonRefus': raisonRefus,
+    };
+  }
+
+  RendezVousModel copyWith({
+    String? statut,
+    DateTime? dateTime,
+    String? raisonRefus,
+  }) {
+    return RendezVousModel(
+      id: id,
+      patientId: patientId,
+      doctorId: doctorId,
+      patientNom: patientNom,
+      doctorNom: doctorNom,
+      specialite: specialite,
+      type: type,
+      motif: motif,
+      modePaiement: modePaiement,
+      dateTime: dateTime ?? this.dateTime,
+      createdAt: createdAt,
+      statut: statut ?? this.statut,
+      rendezVousnum: rendezVousnum,
+      raisonRefus: raisonRefus ?? this.raisonRefus,
+    );
+  }
 }
 
+// ===== MESSAGE MODEL =====
 class MessageModel {
   final String id;
   final String senderId;
@@ -71,68 +200,32 @@ class MessageModel {
   });
 }
 
-// ===== MOCK DATA =====
-class MockData {
-  static final List<UserModel> doctors = [
-    UserModel(
-      id: 'd1', username: 'dr_bouanani', email: 'bouanani@med.dz',
-      role: 'doctor', nomProfessionnel: 'Dr. Bouanani',
-      specialite: 'Cardiologue', anciennete: '12 ans',
-      latitude: 35.9306, longitude: 0.0886,
-    ),
-    UserModel(
-      id: 'd2', username: 'dr_hasni', email: 'hasni@med.dz',
-      role: 'doctor', nomProfessionnel: 'Dr. Hasni',
-      specialite: 'Généraliste', anciennete: '8 ans',
-      latitude: 35.9280, longitude: 0.0910,
-    ),
-    UserModel(
-      id: 'd3', username: 'dr_rachdi', email: 'rachdi@med.dz',
-      role: 'doctor', nomProfessionnel: 'Dr. Rachdi',
-      specialite: 'Pédiatre', anciennete: '15 ans',
-      latitude: 35.9260, longitude: 0.0870,
-    ),
-    UserModel(
-      id: 'd4', username: 'dr_mansouri', email: 'mansouri@med.dz',
-      role: 'doctor', nomProfessionnel: 'Dr. Mansouri',
-      specialite: 'Dermatologue', anciennete: '6 ans',
-      latitude: 35.9320, longitude: 0.0930,
-    ),
-  ];
+// ===== DATABASE SERVICE =====
+class DatabaseService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  static List<RendezVousModel> rendezVous = [
-    RendezVousModel(
-      id: 'rv1', patientId: 'p1', doctorId: 'd2',
-      patientNom: 'Mr. Slimane', doctorNom: 'Dr. Hasni',
-      dateTime: DateTime(2026, 5, 22, 9, 30),
-      statut: 'confirme',
-    ),
-    RendezVousModel(
-      id: 'rv2', patientId: 'p2', doctorId: 'd2',
-      patientNom: 'Mr. Hafid', doctorNom: 'Dr. Hasni',
-      dateTime: DateTime(2026, 5, 22, 10, 0),
-      statut: 'confirme',
-    ),
-    RendezVousModel(
-      id: 'rv3', patientId: 'p3', doctorId: 'd2',
-      patientNom: 'Mr. Ahmed', doctorNom: 'Dr. Hasni',
-      dateTime: DateTime(2026, 5, 22, 10, 30),
-      statut: 'en_attente',
-    ),
-    RendezVousModel(
-      id: 'rv4', patientId: 'p4', doctorId: 'd2',
-      patientNom: 'Mm. Farah', doctorNom: 'Dr. Hasni',
-      dateTime: DateTime(2026, 5, 22, 11, 0),
-      statut: 'en_attente',
-    ),
-  ];
+  Future<List<UserModel>> getDoctors() async {
+    try {
+      var snapshot = await _db
+          .collection('users')
+          .where('role', isEqualTo: 'doctor')
+          .get();
+      return snapshot.docs
+          .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
 
-  static List<MessageModel> messages = [
-    MessageModel(id: 'm1', senderId: 'p1', receiverId: 'd2',
-      contenu: 'Bonjour Docteur, j\'ai des douleurs thoraciques.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2))),
-    MessageModel(id: 'm2', senderId: 'd2', receiverId: 'p1',
-      contenu: 'Bonjour, je vous recommande de passer une consultation rapidement.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 1))),
-  ];
+  Future<List<String>> getSpecialites() async {
+    try {
+      final snap = await _db.collection('specialite').get();
+      return snap.docs
+          .map((d) => d.data()['nom']?.toString() ?? d.id)
+          .toList();
+    } catch (e) {
+      return ['Généraliste', 'Cardiologue', 'Pédiatre', 'Dermatologue'];
+    }
+  }
 }

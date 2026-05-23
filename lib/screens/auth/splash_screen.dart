@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final Widget nextScreen; // الصفحة التي سننتقل إليها
+
+  const SplashScreen({super.key, required this.nextScreen});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -67,17 +68,21 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _startAnimation() async {
     await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
     _logoController.forward();
     await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
     _textController.forward();
     await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
     _pulseController.repeat(reverse: true);
     await Future.delayed(const Duration(milliseconds: 2200));
     if (mounted) {
+      _pulseController.stop();
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 600),
-          pageBuilder: (_, __, ___) => const LoginScreen(),
+          transitionDuration: const Duration(milliseconds: 1000),
+          pageBuilder: (_, __, ___) => widget.nextScreen,
           transitionsBuilder: (_, anim, __, child) =>
               FadeTransition(opacity: anim, child: child),
         ),
@@ -98,8 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
-        children: {
-
+        children: [
           // ── Cercles décoratifs discrets fond blanc ──
           Positioned(
             top: -50,
@@ -155,10 +159,10 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 // ── LOGO ──
                 AnimatedBuilder(
-                  animation: Listenable.merge([_logoController, _pulseController]),
+                  animation:
+                      Listenable.merge([_logoController, _pulseController]),
                   builder: (_, __) {
                     return Opacity(
                       opacity: _logoOpacity.value,
@@ -176,7 +180,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF1565C0).withOpacity(0.10),
+                                    color: const Color(0xFF1565C0)
+                                        .withOpacity(0.10),
                                     width: 1.5,
                                   ),
                                 ),
@@ -191,7 +196,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF26C6DA).withOpacity(0.12),
+                                    color: const Color(0xFF26C6DA)
+                                        .withOpacity(0.12),
                                     width: 1,
                                   ),
                                 ),
@@ -274,26 +280,27 @@ class _SplashScreenState extends State<SplashScreen>
                 // ── Loading indicator ──
                 AnimatedBuilder(
                   animation: _textController,
-                  builder: (_, __) {
+                  child: const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF1565C0),
+                      ),
+                    ),
+                  ),
+                  builder: (context, childWidget) {
                     return Opacity(
                       opacity: _textOpacity.value,
-                      child: const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF1565C0),
-                          ),
-                        ),
-                      ),
+                      child: childWidget,
                     );
                   },
                 ),
               ],
             ),
           ),
-        }.toList(),
+        ],
       ),
     );
   }
