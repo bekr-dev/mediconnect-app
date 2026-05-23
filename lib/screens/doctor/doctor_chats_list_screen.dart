@@ -83,7 +83,7 @@ class _DoctorChatsListScreenState extends State<DoctorChatsListScreen> {
         stream: FirebaseFirestore.instance
             .collection('rendezVous')
             .where('doctorId', isEqualTo: _myUid)
-            .where('statut', isEqualTo: 'confirme')
+            .where('statut', whereIn: ['confirme', 'termine'])
             .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const SizedBox();
