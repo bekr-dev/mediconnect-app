@@ -63,7 +63,7 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Mes patients ---',
+        title: Text('Mes patients',
             style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700, color: AppColors.textDark)),
         backgroundColor: Colors.white,
@@ -244,10 +244,10 @@ class _PatientCardState extends State<_PatientCard> {
               StatusBadge(statut: rv.statut),
             ]),
           ]),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
-            height: 30,
+            height: 50,
             child: ElevatedButton.icon(
               onPressed: _updating ? null : _marquerTermine,
               icon: _updating
