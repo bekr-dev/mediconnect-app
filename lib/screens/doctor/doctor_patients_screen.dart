@@ -247,7 +247,7 @@ class _PatientCardState extends State<_PatientCard> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 30,
             child: ElevatedButton.icon(
               onPressed: _updating ? null : _marquerTermine,
               icon: _updating
