@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '/models/models.dart';
 import '/theme/app_theme.dart';
 import 'doctor_home_screen.dart' show StatusBadge, RendezVousDetailSheet;
-//import 'doctor_home_screen.dart';
 
 class DoctorPatientsScreen extends StatefulWidget {
   const DoctorPatientsScreen({super.key});
@@ -15,11 +14,12 @@ class DoctorPatientsScreen extends StatefulWidget {
 }
 
 class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
-//  DateTime _selectedDate = DateTime.now();
   DateTimeRange _selectedDateRange = DateTimeRange(
     start: DateTime.now(),
     end: DateTime.now().add(const Duration(days: 1)),
   );
+
+  bool _showBenefices = false;
 
   String get _doctorId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -27,7 +27,7 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     return FirebaseFirestore.instance
         .collection('rendezVous')
         .where('doctorId', isEqualTo: _doctorId)
-        .where('statut', isEqualTo: 'confirme')
+        .where('statut', whereIn: ['confirme', 'termine'])
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => RendezVousModel.fromMap(d.data(), d.id))
@@ -44,7 +44,6 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     final picked = await showDateRangePicker(
       context: context,
       currentDate: DateTime.now(),
-      //initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
       builder: (ctx, child) => Theme(
@@ -69,6 +68,31 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => setState(() => _showBenefices = !_showBenefices),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _showBenefices
+                      ? AppColors.danger.withOpacity(0.1)
+                      : AppColors.success.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _showBenefices
+                      ? Icons.close
+                      : Icons.show_chart,
+                  color: _showBenefices ? AppColors.danger : AppColors.success,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: StreamBuilder<List<RendezVousModel>>(
         stream: _streamPatients(),
@@ -78,15 +102,143 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
           }
 
           final allRvs = snapshot.data ?? [];
+
+          if (_showBenefices) {
+            final termineRvs = allRvs
+                .where((r) =>
+                    r.statut == 'termine' &&
+                    _isSameDay(r.dateTime, _selectedDateRange))
+                .toList()
+              ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
+
+            final totalRevenu = termineRvs.fold<double>(
+                0, (sum, r) => sum + (r.prix ?? 0));
+
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                GestureDetector(
+                  onTap: _pickDate,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                        color: AppColors.success.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: AppColors.success.withOpacity(0.3))),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Text(
+                        '${DateFormat('dd MMMM yyyy').format(_selectedDateRange.start)} - ${DateFormat('dd MMMM yyyy').format(_selectedDateRange.end)}',
+                        style: GoogleFonts.poppins(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.expand_more,
+                          color: AppColors.success, size: 18),
+                    ]),
+                  ),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00897B), Color(0xFF4DB6AC)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppColors.success.withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4))
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.show_chart,
+                            color: Colors.white, size: 24),
+                        const SizedBox(width: 8),
+                        Text('Bénéfices',
+                            style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18)),
+                      ]),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Rendez-vous terminés',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white70, fontSize: 12)),
+                              Text('${termineRvs.length}',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 28)),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text('Total revenus',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white70, fontSize: 12)),
+                              Text('${totalRevenu.toStringAsFixed(2)} DA',
+                                  style: GoogleFonts.poppins(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 22)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (termineRvs.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      child: Column(children: [
+                        Icon(Icons.event_busy,
+                            size: 48, color: Colors.grey.shade300),
+                        const SizedBox(height: 8),
+                        Text('Aucun rendez-vous terminé',
+                            style: GoogleFonts.poppins(
+                                color: AppColors.textGrey)),
+                      ]),
+                    ),
+                  )
+                else
+                  ...termineRvs.map((rv) => _PatientCard(
+                        rv: rv,
+                        showPrix: true,
+                      )),
+              ],
+            );
+          }
+
           final filtered = allRvs
-              .where((r) => _isSameDay(r.dateTime, _selectedDateRange))
+              .where((r) =>
+                  r.statut == 'confirme' &&
+                  _isSameDay(r.dateTime, _selectedDateRange))
               .toList()
             ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              // Date picker
               GestureDetector(
                 onTap: _pickDate,
                 child: Container(
@@ -143,7 +295,8 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
 
 class _PatientCard extends StatefulWidget {
   final RendezVousModel rv;
-  const _PatientCard({required this.rv});
+  final bool showPrix;
+  const _PatientCard({required this.rv, this.showPrix = false});
   @override
   State<_PatientCard> createState() => _PatientCardState();
 }
@@ -178,7 +331,6 @@ class _PatientCardState extends State<_PatientCard> {
   Widget build(BuildContext context) {
     final rv = widget.rv;
     final time = DateFormat('dd/MM/yyyy HH:mm').format(rv.dateTime);
-//    '${rv.dateTime.hour.toString().padLeft(2, '0')}:${rv.dateTime.minute.toString().padLeft(2, '0')}';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -206,7 +358,7 @@ class _PatientCardState extends State<_PatientCard> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text( rv.patientNom,
+                    Text(rv.patientNom,
                         style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w500,
                             color: AppColors.textDark)),
@@ -216,6 +368,23 @@ class _PatientCardState extends State<_PatientCard> {
                               fontSize: 12, color: AppColors.textGrey),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
+                    if (widget.showPrix && rv.prix != null)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${rv.prix!.toStringAsFixed(2)} DA',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: AppColors.success,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
                     TextButton(
                       onPressed: () => showModalBottomSheet(
                         context: context,
@@ -244,31 +413,33 @@ class _PatientCardState extends State<_PatientCard> {
               StatusBadge(statut: rv.statut),
             ]),
           ]),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: _updating ? null : _marquerTermine,
-              icon: _updating
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Icon(Icons.check_circle_outline,
-                      color: Colors.white, size: 18),
-              label: Text('Marquer comme terminé',
-                  style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13)),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.success,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
+          if (!widget.showPrix) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: _updating ? null : _marquerTermine,
+                icon: _updating
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Icon(Icons.check_circle_outline,
+                        color: Colors.white, size: 18),
+                label: Text('Marquer comme terminé',
+                    style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13)),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.success,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+              ),
             ),
-          ),
+          ],
         ]),
       ),
     );
