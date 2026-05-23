@@ -643,7 +643,7 @@ class _RendezVousDetailSheetState extends State<RendezVousDetailSheet> {
             if (widget.isDoctor && rv.statut == 'confirme')
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 50,
                 child: ElevatedButton.icon(
                   onPressed: _updating ? null : _marquerTermine,
                   icon: _updating
