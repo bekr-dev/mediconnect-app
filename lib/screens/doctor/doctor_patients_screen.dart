@@ -63,7 +63,7 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Mes patients',
+        title: Text('Mes patients ---',
             style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700, color: AppColors.textDark)),
         backgroundColor: Colors.white,
