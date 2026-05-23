@@ -217,7 +217,25 @@ class _PatientCardState extends State<_PatientCard> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                     TextButton(
-                      onPressed: () => showModalBottomSheet(
+                      onPressed: () => 
+                      showDialog(
+  context: context,
+  barrierDismissible: true, // تتيح إغلاق الـ Dialog عند الضغط خارجه
+  builder: (BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24), // حواف دائرية من كل الجهات للـ Dialog
+      ),
+      clipBehavior: Clip.antiAlias, // لضمان عدم خروج محتوى الـ Sheet عن الحواف الدائرية
+      child: Container(
+        // يمكنك تحديد عرض أقصى للـ Dialog لكي لا يتمدد بشكل مشوه على الشاشات الكبيرة
+        constraints: const BoxConstraints(maxWidth: 400), 
+        child: RendezVousDetailSheet(rv: rv, isDoctor: true),
+      ),
+    );
+  },
+),
+  /*                    showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
@@ -225,7 +243,7 @@ class _PatientCardState extends State<_PatientCard> {
                                 top: Radius.circular(24))),
                         builder: (_) =>
                             RendezVousDetailSheet(rv: rv, isDoctor: true),
-                      ),
+                      ),*/
                       style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(0, 0)),
