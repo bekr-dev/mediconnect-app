@@ -7,12 +7,10 @@ class UserModel {
   final String email;
   final String role;
   final String? nom;
-  // Patient fields
   final String? dateNaissance;
   final String? sexe;
   final String? taille;
   final String? poids;
-  // Doctor fields
   final String? nomProfessionnel;
   final String? specialite;
   final String? anciennete;
@@ -94,9 +92,10 @@ class RendezVousModel {
   final String modePaiement;
   final DateTime dateTime;
   final DateTime createdAt;
-  final String statut; // 'en_attente', 'confirme', 'annuler', 'termine'
+  final String statut;
   final int rendezVousnum;
   final String? raisonRefus;
+  final double? prix;
 
   RendezVousModel({
     required this.id,
@@ -113,6 +112,7 @@ class RendezVousModel {
     required this.statut,
     this.rendezVousnum = 0,
     this.raisonRefus,
+    this.prix,
   });
 
   factory RendezVousModel.fromMap(Map<String, dynamic> map, String docId) {
@@ -138,6 +138,7 @@ class RendezVousModel {
       statut: map['statut'] ?? 'en_attente',
       rendezVousnum: map['rendezVousnum'] ?? 0,
       raisonRefus: map['raisonRefus'],
+      prix: map['prix'] != null ? (map['prix'] as num).toDouble() : null,
     );
   }
 
@@ -156,6 +157,7 @@ class RendezVousModel {
       'statut': statut,
       'rendezVousnum': rendezVousnum,
       if (raisonRefus != null) 'raisonRefus': raisonRefus,
+      if (prix != null) 'prix': prix,
     };
   }
 
@@ -163,6 +165,7 @@ class RendezVousModel {
     String? statut,
     DateTime? dateTime,
     String? raisonRefus,
+    double? prix,
   }) {
     return RendezVousModel(
       id: id,
@@ -179,6 +182,7 @@ class RendezVousModel {
       statut: statut ?? this.statut,
       rendezVousnum: rendezVousnum,
       raisonRefus: raisonRefus ?? this.raisonRefus,
+      prix: prix ?? this.prix,
     );
   }
 }
