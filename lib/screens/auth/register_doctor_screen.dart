@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/models.dart';
 import '../../theme/app_theme.dart';
 import '../doctor/doctor_home_screen.dart';
-import 'login_doctor_screen.dart';
+import 'login_screen.dart';
 
 class RegisterDoctorScreen extends StatefulWidget {
   final String? googleUid;
@@ -908,7 +908,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       Text('Déjà un compte ? ', style: GoogleFonts.poppins(color: AppColors.textGrey, fontSize: 13)),
       GestureDetector(
-        onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginDoctorScreen())),
+        onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
         child: Text('Se connecter', style: GoogleFonts.poppins(color: _doc, fontWeight: FontWeight.w600, fontSize: 13)),
       ),
     ]);
