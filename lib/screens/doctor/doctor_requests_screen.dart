@@ -7,8 +7,15 @@ import '/models/models.dart';
 import '/theme/app_theme.dart';
 import 'doctor_home_screen.dart' show StatusBadge, RendezVousDetailSheet;
 
-class DoctorRequestsScreen extends StatelessWidget {
+class DoctorRequestsScreen extends StatefulWidget {
   const DoctorRequestsScreen({super.key});
+
+  @override
+  State<DoctorRequestsScreen> createState() => _DoctorRequestsScreenState();
+}
+
+class _DoctorRequestsScreenState extends State<DoctorRequestsScreen> {
+  bool _showArchive = false;
 
   String get _doctorId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -16,8 +23,7 @@ class DoctorRequestsScreen extends StatelessWidget {
     return FirebaseFirestore.instance
         .collection('rendezVous')
         .where('doctorId', isEqualTo: _doctorId)
-        .where('statut', isEqualTo: 'en_attente')
-        //.orderBy('createdAt', descending: true)
+        .where('statut', isEqualTo: _showArchive ? 'annuler' : 'en_attente')
         .snapshots()
         .map((snap) => snap.docs
             .map((d) => RendezVousModel.fromMap(d.data(), d.id))
@@ -35,6 +41,29 @@ class DoctorRequestsScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () => setState(() => _showArchive = !_showArchive),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _showArchive
+                      ? AppColors.danger.withOpacity(0.1)
+                      : AppColors.textGrey.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _showArchive ? Icons.close : Icons.archive_outlined,
+                  color: _showArchive ? AppColors.danger : AppColors.textGrey,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: StreamBuilder<List<RendezVousModel>>(
         stream: _streamRequests(),
@@ -43,6 +72,69 @@ class DoctorRequestsScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           final requests = snapshot.data ?? [];
+
+          if (_showArchive) {
+            if (requests.isEmpty) {
+              return Center(
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.archive_outlined,
+                          size: 80, color: AppColors.textGrey),
+                      const SizedBox(height: 16),
+                      Text('Aucune demande annulée',
+                          style: GoogleFonts.poppins(
+                              color: AppColors.textGrey, fontSize: 16)),
+                    ]),
+              );
+            }
+            return ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.archive,
+                            color: AppColors.danger, size: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Demandes annulées',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.danger)),
+                            Text('${requests.length} demande(s) refusée(s)',
+                                style: GoogleFonts.poppins(
+                                    fontSize: 13, color: AppColors.textGrey)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ...requests.map((rv) => _ArchivedRequestCard(rv: rv)),
+              ],
+            );
+          }
+
           if (requests.isEmpty) {
             return Center(
               child: Column(
@@ -73,6 +165,106 @@ class DoctorRequestsScreen extends StatelessWidget {
   }
 }
 
+class _ArchivedRequestCard extends StatelessWidget {
+  final RendezVousModel rv;
+  const _ArchivedRequestCard({required this.rv});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.danger.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(children: [
+          Row(children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                  color: AppColors.danger.withOpacity(0.1),
+                  shape: BoxShape.circle),
+              child:
+                  const Icon(Icons.person_off, color: AppColors.danger, size: 30),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(rv.patientNom,
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppColors.textDark)),
+                    if (rv.specialite.isNotEmpty)
+                      Text(rv.specialite,
+                          style: GoogleFonts.poppins(
+                              fontSize: 12, color: AppColors.textGrey)),
+                    if (rv.motif.isNotEmpty)
+                      Text('Motif: ${rv.motif}',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12, color: AppColors.textGrey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    if (rv.raisonRefus != null && rv.raisonRefus!.isNotEmpty)
+                      Container(
+                        margin: const EdgeInsets.only(top: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.info_outline,
+                                size: 14, color: AppColors.danger),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(rv.raisonRefus!,
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 11, color: AppColors.danger),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                            ),
+                          ],
+                        ),
+                      ),
+                    TextButton(
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) => Dialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24)),
+                          child: RendezVousDetailSheet(rv: rv, isDoctor: false),
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0)),
+                      child: Text('plus d\'info',
+                          style: GoogleFonts.poppins(
+                              color: AppColors.primary, fontSize: 12)),
+                    ),
+                  ]),
+            ),
+            StatusBadge(statut: rv.statut),
+          ]),
+        ]),
+      ),
+    );
+  }
+}
+
 class _RequestCard extends StatelessWidget {
   final RendezVousModel rv;
   const _RequestCard({required this.rv});
@@ -81,7 +273,6 @@ class _RequestCard extends StatelessWidget {
     DateTime? pickedDate;
     TimeOfDay? pickedTime;
 
-    // 1. Choisir la date
     pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 1)),
@@ -97,7 +288,6 @@ class _RequestCard extends StatelessWidget {
     );
     if (pickedDate == null || !context.mounted) return;
 
-    // 2. Choisir l'heure
     pickedTime = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 9, minute: 0),
@@ -276,16 +466,6 @@ class _RequestCard extends StatelessWidget {
                           child: RendezVousDetailSheet(rv: rv, isDoctor: false),
                         ),
                       ),
-                      /*
-                              showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(24))),
-                        builder: (_) =>
-                            RendezVousDetailSheet(rv: rv, isDoctor: false),
-                      ),*/
                       style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(0, 0)),
