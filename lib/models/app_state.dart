@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models.dart';
+import 'dart:developer';
 
 class AppState extends ChangeNotifier {
   // ── Cached User ────────────────────────
