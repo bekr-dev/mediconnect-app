@@ -72,22 +72,36 @@ class DoctorAccountScreen extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(children: [
-              // ── Infos ──
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
-                child: Column(children: [
-                  _InfoRow(Icons.badge_outlined, 'Nom professionnel', nomAffiche),
-                  if (specialite.isNotEmpty)
-                    _InfoRow(Icons.local_hospital_outlined, 'Spécialité', specialite),
-                  _InfoRow(Icons.work_history_outlined, 'Ancienneté', anciennete),
-                  _InfoRow(Icons.email_outlined, 'Email', email),
-                  _InfoRow(Icons.phone_outlined, 'Téléphone', tel),
-                ]),
-              ),
+// ── Infos ──
+Container(
+  padding: const EdgeInsets.all(18),
+  decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text('Informations professionnelles',
+          style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textDark)),
+      const SizedBox(height: 16),
+      _InfoRow(Icons.badge_outlined, 'Nom professionnel', nomAffiche),
+      const Divider(height: 24),
+      if (specialite.isNotEmpty) ...[
+        _InfoRow(Icons.local_hospital_outlined, 'Spécialité', specialite),
+        const Divider(height: 24),
+      ],
+      _InfoRow(Icons.work_history_outlined, 'Ancienneté', anciennete),
+      const Divider(height: 24),
+      _InfoRow(Icons.email_outlined, 'Email', email),
+      const Divider(height: 24),
+      _InfoRow(Icons.phone_outlined, 'Téléphone', tel),
+    ],
+  ),
+),
               const SizedBox(height: 16),
               _MenuItem(icon: Icons.payment_outlined, label: 'Moyens de paiement', onTap: () {}),
               _MenuItem(icon: Icons.schedule_outlined, label: 'Mes horaires', onTap: () {}),
@@ -118,26 +132,46 @@ class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label, value;
   const _InfoRow(this.icon, this.label, this.value);
+  
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(children: [
-        Icon(icon, color: const Color(0xFF006064), size: 20),
-        const SizedBox(width: 14),
-        Text(label, style: GoogleFonts.poppins(color: AppColors.textGrey, fontSize: 13)),
-        const Spacer(),
-        Flexible(
-          child: Text(value,
-              style: GoogleFonts.poppins(
-                  color: AppColors.textDark, fontWeight: FontWeight.w500, fontSize: 13),
-              overflow: TextOverflow.ellipsis),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: const Color(0xFF006064).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: const Color(0xFF006064), size: 20),
         ),
-      ]),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: GoogleFonts.poppins(
+                      color: AppColors.textGrey,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              Text(value,
+                  style: GoogleFonts.poppins(
+                      color: AppColors.textDark,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
-
 class _MenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
