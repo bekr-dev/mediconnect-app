@@ -74,6 +74,13 @@ class _LoginScreenState extends State<LoginScreen>
       final appState = context.read<AppState>();
       final user = await appState.loadUserFromFirestore(credential.user!.uid);
 
+      if (user != null) {
+  log("=== بيانات المستخدم كاملة من الـ Model ===");
+  log(user.toMap().toString()); 
+} else {
+  log("❌ تحذير: الكائن user قيمته null، لم يتم جلب أي بيانات من Firestore!");
+}
+      
       if (!mounted) return;
 
       final role = user?.role;
