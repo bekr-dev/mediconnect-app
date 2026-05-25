@@ -37,7 +37,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
 
   int _currentStep = 0;
   bool _loading = false;
-
+  String _verificationId = '';
   final _formKey0 = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
@@ -113,6 +113,56 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
     super.dispose();
   }
 
+  
+  /* otp */
+  Future<void> _sendPhoneOTP() async {
+  // استخدم رقم الهاتف من _phoneCtrl
+  final phoneNumber = '+213${_phoneCtrl.text.trim()}'; // مثال للجزائر
+  
+  await FirebaseAuth.instance.verifyPhoneNumber(
+    phoneNumber: phoneNumber,
+    timeout: const Duration(seconds: 60),
+    
+    verificationCompleted: (PhoneAuthCredential credential) async {
+      // تم التحقق تلقائياً (Android فقط)
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      _goTo(2);
+    },
+    
+    verificationFailed: (FirebaseAuthException e) {
+      _showMsg('فشل الإرسال: ${e.message}');
+    },
+    
+    codeSent: (String verificationId, int? resendToken) {
+      _verificationId = verificationId;
+      _startResend();
+      _goTo(1); // الانتقال لصفحة إدخال OTP
+    },
+    
+    codeAutoRetrievalTimeout: (String verificationId) {
+      _verificationId = verificationId;
+    },
+  );
+}
+
+Future<void> _verifyOtp() async {
+  final code = _otpCtrls.map((c) => c.text).join();
+  if (code.length != 6) return;
+  
+  try {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: _verificationId,
+      smsCode: code,
+    );
+    
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    _goTo(2); // الانتقال للخطوة التالية
+  } catch (e) {
+    _showMsg('كود خاطئ: ${e.toString()}');
+  }
+}
+
+  
   Future<void> _fetchSpecialites() async {
     final list = await DatabaseService().getSpecialites();
     if (mounted) {
@@ -135,7 +185,7 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
       if (_isGoogleUser) {
         _goTo(2);
       } else {
-        _startResend();
+      _sendPhoneOTP();
         _goTo(1);
         Future.delayed(const Duration(milliseconds: 400), () {
           if (mounted) _otpNodes[0].requestFocus();
@@ -350,6 +400,10 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
         _field(_usernameCtrl, 'ex: ahmed_123', Icons.person_outline,
           validator: (v) => (v == null || v.isEmpty) ? 'Ce champ est obligatoire' : null),
         const SizedBox(height: 16),
+        _lbl('Numéro de téléphone'),
+        _field(_phoneCtrl, '0555 123 456', Icons.phone_outlined, keyboard: TextInputType.phone,
+          validator: (v) => (v == null || v.isEmpty) ? 'Ce champ est obligatoire' : null),
+        const SizedBox(height: 16),
         _lbl('Email'),
         _field(_emailCtrl, _isGoogleUser ? widget.googleEmail! : 'votre@email.com', Icons.email_outlined,
           keyboard: TextInputType.emailAddress,
@@ -452,10 +506,6 @@ class _RegisterDoctorScreenState extends State<RegisterDoctorScreen>
         const SizedBox(height: 16),
         _lbl('Nom professionnel'),
         _field(_nomProfCtrl, 'Nom sur documents', Icons.verified_outlined,
-          validator: (v) => (v == null || v.isEmpty) ? 'Ce champ est obligatoire' : null),
-        const SizedBox(height: 16),
-        _lbl('Numéro de téléphone'),
-        _field(_phoneCtrl, '0555 123 456', Icons.phone_outlined, keyboard: TextInputType.phone,
           validator: (v) => (v == null || v.isEmpty) ? 'Ce champ est obligatoire' : null),
         const SizedBox(height: 16),
         _lbl('Numéro ONMO'),
