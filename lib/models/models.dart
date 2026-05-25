@@ -15,8 +15,24 @@ class UserModel {
   final String? specialite;
   final String? anciennete;
   final String? numerodetel;
+  final String? onmoNumber;
+  final bool isActive;
   final double? latitude;
   final double? longitude;
+  final String? wilaya;
+  final String? commune;
+  final String? rue;
+  final String? cabinetNum;
+  final Map<String, bool>? workDays;
+  final String? startTime;
+  final String? endTime;
+  final String? consultDuration;
+  final String? consultTarif;
+  final bool onmoUploaded;
+  final bool diplomaUploaded;
+  final bool profileUploaded;
+  final String? authProvider;
+  final DateTime? createdAt;
 
   UserModel({
     required this.id,
@@ -32,8 +48,24 @@ class UserModel {
     this.specialite,
     this.anciennete,
     this.numerodetel,
+    this.onmoNumber,
+    this.isActive = false,
     this.latitude,
     this.longitude,
+    this.wilaya,
+    this.commune,
+    this.rue,
+    this.cabinetNum,
+    this.workDays,
+    this.startTime,
+    this.endTime,
+    this.consultDuration,
+    this.consultTarif,
+    this.onmoUploaded = false,
+    this.diplomaUploaded = false,
+    this.profileUploaded = false,
+    this.authProvider,
+    this.createdAt,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String documentId) {
@@ -51,10 +83,27 @@ class UserModel {
       specialite: map['specialite'],
       anciennete: map['anciennete'],
       numerodetel: map['numerodetel'],
-      latitude:
-          map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
-      longitude: map['longitude'] != null
-          ? (map['longitude'] as num).toDouble()
+      onmoNumber: map['onmoNumber'],
+      isActive: map['isActive'] ?? false,
+      latitude: map['latitude'] != null ? (map['latitude'] as num).toDouble() : null,
+      longitude: map['longitude'] != null ? (map['longitude'] as num).toDouble() : null,
+      wilaya: map['wilaya'],
+      commune: map['commune'],
+      rue: map['rue'],
+      cabinetNum: map['cabinetNum'],
+      workDays: map['workDays'] != null ? Map<String, bool>.from(map['workDays']) : null,
+      startTime: map['startTime'],
+      endTime: map['endTime'],
+      consultDuration: map['consultDuration'],
+      consultTarif: map['consultTarif'],
+      onmoUploaded: map['onmoUploaded'] ?? false,
+      diplomaUploaded: map['diplomaUploaded'] ?? false,
+      profileUploaded: map['profileUploaded'] ?? false,
+      authProvider: map['authProvider'],
+      createdAt: map['createdAt'] != null 
+          ? (map['createdAt'] is Timestamp 
+              ? (map['createdAt'] as Timestamp).toDate() 
+              : DateTime.tryParse(map['createdAt'].toString()))
           : null,
     );
   }
@@ -65,6 +114,10 @@ class UserModel {
       'email': email,
       'role': role,
       'nom': nom,
+      'isActive': isActive,
+      'onmoUploaded': onmoUploaded,
+      'diplomaUploaded': diplomaUploaded,
+      'profileUploaded': profileUploaded,
       if (dateNaissance != null) 'dateNaissance': dateNaissance,
       if (sexe != null) 'sexe': sexe,
       if (taille != null) 'taille': taille,
@@ -73,8 +126,20 @@ class UserModel {
       if (specialite != null) 'specialite': specialite,
       if (anciennete != null) 'anciennete': anciennete,
       if (numerodetel != null) 'numerodetel': numerodetel,
+      if (onmoNumber != null) 'onmoNumber': onmoNumber,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (wilaya != null) 'wilaya': wilaya,
+      if (commune != null) 'commune': commune,
+      if (rue != null) 'rue': rue,
+      if (cabinetNum != null) 'cabinetNum': cabinetNum,
+      if (workDays != null) 'workDays': workDays,
+      if (startTime != null) 'startTime': startTime,
+      if (endTime != null) 'endTime': endTime,
+      if (consultDuration != null) 'consultDuration': consultDuration,
+      if (consultTarif != null) 'consultTarif': consultTarif,
+      if (authProvider != null) 'authProvider': authProvider,
+      if (createdAt != null) 'createdAt': Timestamp.fromDate(createdAt!),
     };
   }
 }
@@ -213,6 +278,7 @@ class DatabaseService {
       var snapshot = await _db
           .collection('users')
           .where('role', isEqualTo: 'doctor')
+          .where('isActive', isEqualTo: true)
           .get();
       return snapshot.docs
           .map((doc) => UserModel.fromMap(doc.data(), doc.id))
