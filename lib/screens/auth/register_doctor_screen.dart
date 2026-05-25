@@ -486,7 +486,7 @@ Future<void> _verifyOtp() async {
         const SizedBox(height: 20),
         _resendSec > 0
           ? Text('Renvoyer dans ${_resendSec}s', style: GoogleFonts.poppins(fontSize: 13, color: AppColors.textGrey))
-          : GestureDetector(onTap: _startResend,
+          : GestureDetector(onTap: _sendPhoneOTP,
               child: Text('Renvoyer le code', style: GoogleFonts.poppins(fontSize: 13, color: _doc,
                 fontWeight: FontWeight.w600, decoration: TextDecoration.underline))),
       ]),
