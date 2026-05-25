@@ -263,7 +263,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         fontSize: 22,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.textDark)),
-                                Text('Bienvenue sur MediConnect',
+                                Text('Bienvenue sur MediConnect2',
                                     style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         color: AppColors.textGrey)),
