@@ -194,9 +194,9 @@ Future<void> _verifyOtp() async {
     }
   }
 
-  void _verifyOtp() {
+/*  void _verifyOtp() {
     if (_otpCtrls.map((c) => c.text).join().length == 6) _goTo(2);
-  }
+  }*/
 
   void _submitIdentity() {
     if (_formKey2.currentState!.validate()) _goTo(3);
