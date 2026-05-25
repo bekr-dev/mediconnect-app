@@ -7,6 +7,7 @@ import '/theme/app_theme.dart';
 import '../../models/app_state.dart';
 import 'register_choice_screen.dart';
 import '../doctor/doctor_home_screen.dart';
+import 'dart:developer';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
