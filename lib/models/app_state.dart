@@ -24,7 +24,7 @@ class AppState extends ChangeNotifier {
         final map = jsonDecode(json) as Map<String, dynamic>;
         _currentUser = UserModel.fromMap(map, map['id'] ?? '');
         notifyListeners();
-      } catch (_) {}
+      } catch (e, stackTrace) {     log("❌ خطأ أثناء جلب أو تحويل بيانات المستخدم: $e");     log(stackTrace.toString());   }
     }
   }
 
@@ -52,7 +52,7 @@ class AppState extends ChangeNotifier {
         notifyListeners();
         return user;
       }
-    } catch (_) {}
+    } catch (e, stackTrace) {     log("❌ خطأ أثناء جلب أو تحويل بيانات المستخدم: $e");     log(stackTrace.toString());   }
     return null;
   }
 
@@ -68,7 +68,7 @@ class AppState extends ChangeNotifier {
           return map['role'] as String?;
         }
       }
-    } catch (_) {}
+    } catch (e, stackTrace) {     log("❌ خطأ أثناء جلب أو تحويل بيانات المستخدم: $e");     log(stackTrace.toString());   }
 
     // 2. Sinon, lire depuis Firestore
     try {
@@ -80,7 +80,7 @@ class AppState extends ChangeNotifier {
         final role = doc.data()?['role'] as String?;
         return role;
       }
-    } catch (_) {}
+    } catch (e, stackTrace) {     log("❌ خطأ أثناء جلب أو تحويل بيانات المستخدم: $e");     log(stackTrace.toString());   }
     return null;
   }
 
